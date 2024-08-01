@@ -1,0 +1,109 @@
+document.getElementById('upload-csv').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        Papa.parse(file, {
+            header: true,
+            complete: function(results) {
+                console.log('CSV Parsed Results:', results);
+                analyzeData(results.data);
+            }
+        });
+    } else {
+        console.error('No file selected.');
+    }
+});
+
+function analyzeData(data) {
+    if (data.length === 0) {
+        console.error('No data found in the CSV file.');
+        return;
+    }
+    
+    console.log('Data to analyze:', data);
+    const recommendations = data.map(row => {
+        const temp = parseFloat(row.Temperature);
+        const humidity = parseFloat(row.Humidity);
+        const moisture = parseFloat(row.Moisture);
+        const nitrogen = parseFloat(row.Nitrogen);
+        const potassium = parseFloat(row.Potassium);
+        const phosphorous = parseFloat(row.Phosphorous);
+
+        let recommendation = `<strong>Soil Type:</strong> ${row['Soil Type']}, <strong>Crop Type:</strong> ${row['Crop Type']}<br>`;
+
+        // Moisture recommendations
+        if (moisture < 20) {
+            recommendation += '🟡 <strong>Moisture:</strong> Low. Increase irrigation to avoid drought stress.<br>';
+        } else if (moisture > 80) {
+            recommendation += '🟡 <strong>Moisture:</strong> High. Reduce irrigation to prevent root diseases.<br>';
+        } else {
+            recommendation += '🟢 <strong>Moisture:</strong> Optimal.<br>';
+        }
+
+        // Nitrogen recommendations
+        if (nitrogen < 50) {
+            recommendation += '🟡 <strong>Nitrogen:</strong> Low. Consider adding nitrogen-rich fertilizers like urea or ammonium nitrate.<br>';
+        } else if (nitrogen > 200) {
+            recommendation += '🟡 <strong>Nitrogen:</strong> High. Reduce nitrogen input to avoid leaching and potential pollution.<br>';
+        } else {
+            recommendation += '🟢 <strong>Nitrogen:</strong> Optimal.<br>';
+        }
+
+        // Potassium recommendations
+        if (potassium < 40) {
+            recommendation += '🟡 <strong>Potassium:</strong> Low. Use potash fertilizers to improve root strength and disease resistance.<br>';
+        } else if (potassium > 150) {
+            recommendation += '🟡 <strong>Potassium:</strong> High. Monitor for potential salt buildup.<br>';
+        } else {
+            recommendation += '🟢 <strong>Potassium:</strong> Optimal.<br>';
+        }
+
+        // Phosphorous recommendations
+        if (phosphorous < 30) {
+            recommendation += '🟡 <strong>Phosphorous:</strong> Low. Add phosphorous-rich fertilizers like superphosphate.<br>';
+        } else if (phosphorous > 100) {
+            recommendation += '🟡 <strong>Phosphorous:</strong> High. Excess phosphorous can lead to nutrient imbalances.<br>';
+        } else {
+            recommendation += '🟢 <strong>Phosphorous:</strong> Optimal.<br>';
+        }
+
+        // Temperature recommendations
+        if (temp < 10 || temp > 30) {
+            recommendation += '🟡 <strong>Temperature:</strong> Not optimal. Ensure proper crop selection for the current temperature range.<br>';
+        } else {
+            recommendation += '🟢 <strong>Temperature:</strong> Optimal.<br>';
+        }
+
+        // Humidity recommendations
+        if (humidity < 30 || humidity > 70) {
+            recommendation += '🟡 <strong>Humidity:</strong> Not ideal. Adjust irrigation and ventilation to manage humidity.<br>';
+        } else {
+            recommendation += '🟢 <strong>Humidity:</strong> Optimal.<br>';
+        }
+
+        return recommendation;
+    });
+
+    console.log('Generated Recommendations:', recommendations);
+    displayRecommendations(recommendations);
+    displaySummary(recommendations);
+}
+
+function displayRecommendations(recommendations) {
+    const recommendationsDiv = document.getElementById('recommendations');
+    recommendationsDiv.innerHTML = recommendations.map(rec => `<div class="recommendation">${rec}</div>`).join('');
+    console.log('Recommendations displayed.');
+}
+
+function displaySummary(recommendations) {
+    const summaryDiv = document.getElementById('summary');
+    const total = recommendations.length;
+    const optimalCount = recommendations.filter(rec => rec.includes('🟢')).length;
+
+    summaryDiv.innerHTML = `
+        <h3>Summary</h3>
+        <p>Total Records Analyzed: ${total}</p>
+        <p>Optimal Conditions: ${optimalCount}</p>
+        <p>Suboptimal Conditions: ${total - optimalCount}</p>
+    `;
+    console.log('Summary displayed.');
+}
