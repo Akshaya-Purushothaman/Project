@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Health Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Soil Health Management</h1>
+    </header>
+    <main>
+        <section class="form-section">
+            <div class="form-group">
+                <label for="fileUpload">Upload Soil Data (CSV file)</label>
+                <input type="file" id="fileUpload" accept=".csv" required>
+            </div>
+            <button onclick="getRecommendations()">Get Recommendations</button>
+        </section>
+        <section class="recommendations" id="recommendations">
+            <!-- Recommendations will be displayed here -->
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Soil Health Management. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function getRecommendations() {
+            const fileUpload = document.getElementById('fileUpload');
+            const file = fileUpload.files[0];
+
+            if (file) {
+                Papa.parse(file, {
+                    header: true,
+                    complete: function(results) {
+                        processCSVData(results.data);
+                    },
+                    error: function(error) {
+                        alert("Error parsing CSV file: " + error.message);
+                    }
+                });
+            } else {
+                alert("Please upload a CSV file.");
+            }
+        }
+
+        function processCSVData(data) {
+            let recommendations = "<h2>Soil Health Recommendations</h2>";
+
+            data.forEach(row => {
+                recommendations += `<div class="recommendation-item"><h3>Soil Type: ${row['soil type']}, Crop Type: ${row['crop type']}</h3>`;
+                
+                // Temperature recommendations
+                if (row.temperature < 10) {
+                    recommendations += "<p>Soil temperature is low. Consider using mulch to retain heat.</p>";
+                } else if (row.temperature > 30) {
+                    recommendations += "<p>Soil temperature is high. Consider shading or watering to cool the soil.</p>";
+                } else {
+                    recommendations += "<p>Soil temperature is at an optimal level.</p>";
+                }
+
+                // Humidity recommendations
+                if (row.humidity < 30) {
+                    recommendations += "<p>Humidity is low. Consider increasing irrigation.</p>";
+                } else if (row.humidity > 70) {
+                    recommendations += "<p>Humidity is high. Ensure proper ventilation.</p>";
+                } else {
+                    recommendations += "<p>Humidity is at an optimal level.</p>";
+                }
+
+                // Moisture recommendations
+                if (row.moisture < 20) {
+                    recommendations += "<p>Soil moisture is low. Consider watering more.</p>";
+                } else if (row.moisture > 60) {
+                    recommendations += "<p>Soil moisture is high. Ensure proper drainage.</p>";
+                } else {
+                    recommendations += "<p>Soil moisture is at a good level.</p>";
+                }
+
+                // Nutrient recommendations
+                if (row.nitrogen < 50) {
+                    recommendations += "<p>Nitrogen levels are low. Consider adding nitrogen-rich fertilizer.</p>";
+                } else {
+                    recommendations += "<p>Nitrogen levels are adequate.</p>";
+                }
+
+                if (row.potassium < 40) {
+                    recommendations += "<p>Potassium levels are low. Consider adding potassium-rich fertilizer.</p>";
+                } else {
+                    recommendations += "<p>Potassium levels are adequate.</p>";
+                }
+
+                if (row.phosphorous < 30) {
+                    recommendations += "<p>Phosphorous levels are low. Consider adding phosphorous-rich fertilizer.</p>";
+                } else {
+                    recommendations += "<p>Phosphorous levels are adequate.</p>";
+                }
+
+                // Fertilizer recommendations
+                recommendations += `<p>Recommended Fertilizer: ${row['fertilizer name']}</p></div>`;
+            });
+
+            document.getElementById('recommendations').innerHTML = recommendations;
+        }
+    </script>
+</body>
+</html>
